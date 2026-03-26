@@ -1,0 +1,101 @@
+{% extends 'tracker/base.html' %}
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card p-3 text-center">
+      <p class="text-muted mb-1">Total Income</p>
+      <h4 class="text-success fw-bold">₹{{ total_income }}</h4>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3 text-center">
+      <p class="text-muted mb-1">Total Expenses</p>
+      <h4 class="text-danger fw-bold">₹{{ total_expense }}</h4>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3 text-center">
+      <p class="text-muted mb-1">Balance</p>
+      <h4 class="fw-bold {% if balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+        ₹{{ balance }}
+      </h4>
+    </div>
+  </div>
+</div>
+
+<!-- Chart + Add Button Row -->
+<div class="row mb-4">
+  <div class="col-md-5">
+    <div class="card p-3">
+      <h6 class="mb-3 fw-bold">Spending breakdown</h6>
+      <canvas id="spendingChart" height="200"></canvas>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0">Recent transactions</h6>
+        <a href="/add/" class="btn btn-sm btn-dark">+ Add transaction</a>
+      </div>
+
+      <!-- Transactions Table -->
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transactions %}
+          <tr>
+            <td>{{ t.title }}</td>
+            <td>{{ t.category }}</td>
+            <td>₹{{ t.amount }}</td>
+            <td>
+              {% if t.type == 'income' %}
+                <span class="badge-income">Income</span>
+              {% else %}
+                <span class="badge-expense">Expense</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="/delete/{{ t.pk }}/" class="btn btn-sm btn-outline-danger">Delete</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-muted text-center">No transactions yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js Script -->
+<script>
+  const ctx = document.getElementById('spendingChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Income', 'Expenses'],
+      datasets: [{
+        data: [{{ total_income }}, {{ total_expense }}],
+        backgroundColor: ['#28a745', '#dc3545'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom' } },
+      cutout: '65%',
+    }
+  });
+</script>
+
+{% endblock %}
